@@ -17,7 +17,7 @@
     <key>MinimumOSVersion</key>
     <string>18.1</string>
     <key>NSHealthShareUsageDescription</key>
-    <string>귀강 데이터를 분석하고 맞춤형 서비스를 제공하기 위해 건강 데이터 접근 권한이 필요합니다.</string>
+    <string>건강 데이터를 분석하고 맞춤형 서비스를 제공하기 위해 건강 데이터 접근 권한이 필요합니다.</string>
     <key>NSHealthUpdateUsageDescription</key>
     <string>건강 데이터를 업데이트하고 동기화하기 위해 건강 데이터 쓰기 권한이 필요합니다.</string>
     <key>UIApplicationSceneManifest</key>
