@@ -64,6 +64,10 @@ playground.xcworkspace
 
 Carthage/Build/
 
+# Config files
+Config.swift
+*.xcconfig
+
 # Accio dependency management
 Dependencies/
 .accio/
