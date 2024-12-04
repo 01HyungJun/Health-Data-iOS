@@ -92,4 +92,18 @@ class ParticipationViewModel: ObservableObject {
             }
         }
     }
+    
+    func fetchData() async {
+        do {
+            // iPhone 데이터 가져오기
+            let iPhoneData = try await healthKitManager.fetchiPhoneData()
+            
+            // Watch에 데이터 요청
+            if WCSession.default.isReachable {
+                WCSession.default.sendMessage(["request": "fetchWatchData"], replyHandler: nil, errorHandler: nil)
+            }
+        } catch {
+            print("Error: \(error.localizedDescription)")
+        }
+    }
 }
