@@ -5,27 +5,18 @@ class HealthKitManager: ObservableObject {
     static let shared = HealthKitManager()
     private let healthStore = HKHealthStore()
     
-    @Published var lastError: String?
     @Published var isAuthorized = false
     
-    // iPhone에서 수집할 데이터 유형
-    private lazy var iPhoneTypes: Set<HKSampleType> = {
+    // 수집할 데이터 유형
+    private lazy var allTypes: Set<HKSampleType> = {
         guard let stepCount = HKObjectType.quantityType(forIdentifier: .stepCount),
               let runningSpeed = HKObjectType.quantityType(forIdentifier: .runningSpeed),
               let basalEnergy = HKObjectType.quantityType(forIdentifier: .basalEnergyBurned),
               let activeEnergy = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned),
               let sleepAnalysis = HKObjectType.categoryType(forIdentifier: .sleepAnalysis),
               let height = HKObjectType.quantityType(forIdentifier: .height),
-              let bodyMass = HKObjectType.quantityType(forIdentifier: .bodyMass) else {
-            return Set()
-        }
-        
-        return [stepCount, runningSpeed, basalEnergy, activeEnergy, sleepAnalysis, height, bodyMass]
-    }()
-    
-    // Apple Watch에서 수집할 데이터 유형
-    private lazy var watchTypes: Set<HKSampleType> = {
-        guard let heartRate = HKObjectType.quantityType(forIdentifier: .heartRate),
+              let bodyMass = HKObjectType.quantityType(forIdentifier: .bodyMass),
+              let heartRate = HKObjectType.quantityType(forIdentifier: .heartRate),
               let oxygenSaturation = HKObjectType.quantityType(forIdentifier: .oxygenSaturation),
               let bloodPressureSystolic = HKObjectType.quantityType(forIdentifier: .bloodPressureSystolic),
               let bloodPressureDiastolic = HKObjectType.quantityType(forIdentifier: .bloodPressureDiastolic),
@@ -34,7 +25,7 @@ class HealthKitManager: ObservableObject {
             return Set()
         }
         
-        return [heartRate, oxygenSaturation, bloodPressureSystolic, bloodPressureDiastolic, respiratoryRate, bodyTemperature]
+        return [stepCount, runningSpeed, basalEnergy, activeEnergy, sleepAnalysis, height, bodyMass, heartRate, oxygenSaturation, bloodPressureSystolic, bloodPressureDiastolic, respiratoryRate, bodyTemperature]
     }()
     
     func requestAuthorization() async throws {
@@ -42,10 +33,40 @@ class HealthKitManager: ObservableObject {
             throw HealthKitError.notAvailable
         }
         
-        try await healthStore.requestAuthorization(toShare: [], read: iPhoneTypes.union(watchTypes))
+        try await healthStore.requestAuthorization(toShare: [], read: allTypes)
         DispatchQueue.main.async {
             self.isAuthorized = true
         }
+    }
+    
+    func fetchAllHealthData() async throws -> [HKSample] {
+        return try await fetchData(for: allTypes)
+    }
+    
+    private func fetchData(for types: Set<HKSampleType>) async throws -> [HKSample] {
+        var allSamples: [HKSample] = []
+        
+        for type in types {
+            if let quantityType = type as? HKQuantityType {
+                do {
+                    if let sample = try await fetchLatestData(for: quantityType) {
+                        allSamples.append(sample)
+                        // 데이터 로깅
+                        let value = sample.quantity.doubleValue(for: preferredUnit(for: quantityType))
+                        print("✅ 데이터: \(quantityType.identifier)")
+                        print("   - 값: \(value)")
+                        print("   - 날짜: \(sample.startDate)")
+                    } else {
+                        print("⚠️ 데이터 없음: \(quantityType.identifier)")
+                    }
+                } catch {
+                    print("❌ 에러 발생: \(quantityType.identifier)")
+                    print("   - \(error.localizedDescription)")
+                }
+            }
+        }
+        
+        return allSamples
     }
     
     private func fetchLatestData<T: HKQuantityType>(for type: T) async throws -> HKQuantitySample? {
@@ -101,56 +122,6 @@ class HealthKitManager: ObservableObject {
         default:
             return .count()
         }
-    }
-    
-    func fetchAllHealthData() async throws -> [HKSample] {
-        print("시작: 헬스킷 데이터 가져오기...")
-        var allSamples: [HKSample] = []
-        
-        // iPhone에서 데이터 수집
-        for type in iPhoneTypes {
-            if let quantityType = type as? HKQuantityType {
-                do {
-                    if let sample = try await fetchLatestData(for: quantityType) {
-                        allSamples.append(sample)
-                        // 데이터 로깅
-                        let value = sample.quantity.doubleValue(for: preferredUnit(for: quantityType))
-                        print("✅ iPhone 데이터: \(quantityType.identifier)")
-                        print("   - 값: \(value)")
-                        print("   - 날짜: \(sample.startDate)")
-                    } else {
-                        print("⚠️ iPhone 데이터 없음: \(quantityType.identifier)")
-                    }
-                } catch {
-                    print("❌ iPhone 에러 발생: \(quantityType.identifier)")
-                    print("   - \(error.localizedDescription)")
-                }
-            }
-        }
-        
-        // Apple Watch에서 데이터 수집
-        for type in watchTypes {
-            if let quantityType = type as? HKQuantityType {
-                do {
-                    if let sample = try await fetchLatestData(for: quantityType) {
-                        allSamples.append(sample)
-                        // 데이터 로깅
-                        let value = sample.quantity.doubleValue(for: preferredUnit(for: quantityType))
-                        print("✅ Watch 데이터: \(quantityType.identifier)")
-                        print("   - 값: \(value)")
-                        print("   - 날짜: \(sample.startDate)")
-                    } else {
-                        print("⚠️ Watch 데이터 없음: \(quantityType.identifier)")
-                    }
-                } catch {
-                    print("❌ Watch 에러 발생: \(quantityType.identifier)")
-                    print("   - \(error.localizedDescription)")
-                }
-            }
-        }
-        
-        print("완료: 총 \(allSamples.count)개의 데이터 가져옴")
-        return allSamples
     }
 }
 

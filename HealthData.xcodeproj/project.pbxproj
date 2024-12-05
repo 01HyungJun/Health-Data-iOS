@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		FACB1EC02CFD46E80057D934 /* HealthDataWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = FACB1E9D2CFD46E50057D934 /* HealthDataWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		FACB1E612CF5B3C90057D934 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -39,13 +35,6 @@
 			remoteGlobalIDString = FACB1E9C2CFD46E50057D934;
 			remoteInfo = "HealthDataWatch Watch App";
 		};
-		FACB1EBE2CFD46E80057D934 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FACB1E482CF5B3C60057D934 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FACB1E9C2CFD46E50057D934;
-			remoteInfo = "HealthDataWatch Watch App";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -55,7 +44,6 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				FACB1EC02CFD46E80057D934 /* HealthDataWatch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,13 +60,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		FACB1ECD2CFD7FCD0057D934 /* Exceptions for "HealthData" folder in "HealthDataWatch" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Utils/HealthKitManager.swift,
-			);
-			target = FACB1E9C2CFD46E50057D934 /* HealthDataWatch */;
-		};
 		FACB1F0A2D00438B0057D934 /* Exceptions for "HealthData" folder in "HealthData" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -93,7 +74,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				FACB1F0A2D00438B0057D934 /* Exceptions for "HealthData" folder in "HealthData" target */,
-				FACB1ECD2CFD7FCD0057D934 /* Exceptions for "HealthData" folder in "HealthDataWatch" target */,
 			);
 			path = HealthData;
 			sourceTree = "<group>";
@@ -101,26 +81,6 @@
 		FACB1E632CF5B3C90057D934 /* HealthDataTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = HealthDataTests;
-			sourceTree = "<group>";
-		};
-		FACB1E6D2CF5B3C90057D934 /* HealthDataUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HealthDataUITests;
-			sourceTree = "<group>";
-		};
-		FACB1E9E2CFD46E60057D934 /* HealthDataWatch */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HealthDataWatch;
-			sourceTree = "<group>";
-		};
-		FACB1EAF2CFD46E80057D934 /* HealthDataWatchTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HealthDataWatchTests;
-			sourceTree = "<group>";
-		};
-		FACB1EB92CFD46E80057D934 /* HealthDataWatchUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HealthDataWatchUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -176,10 +136,6 @@
 			children = (
 				FACB1E522CF5B3C60057D934 /* HealthData */,
 				FACB1E632CF5B3C90057D934 /* HealthDataTests */,
-				FACB1E6D2CF5B3C90057D934 /* HealthDataUITests */,
-				FACB1E9E2CFD46E60057D934 /* HealthDataWatch */,
-				FACB1EAF2CFD46E80057D934 /* HealthDataWatchTests */,
-				FACB1EB92CFD46E80057D934 /* HealthDataWatchUITests */,
 				FACB1E512CF5B3C60057D934 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -212,7 +168,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				FACB1EBF2CFD46E80057D934 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				FACB1E522CF5B3C60057D934 /* HealthData */,
@@ -260,9 +215,6 @@
 			dependencies = (
 				FACB1E6C2CF5B3C90057D934 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				FACB1E6D2CF5B3C90057D934 /* HealthDataUITests */,
-			);
 			name = HealthDataUITests;
 			packageProductDependencies = (
 			);
@@ -281,9 +233,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				FACB1E9E2CFD46E60057D934 /* HealthDataWatch */,
 			);
 			name = HealthDataWatch;
 			packageProductDependencies = (
@@ -305,9 +254,6 @@
 			dependencies = (
 				FACB1EAE2CFD46E80057D934 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				FACB1EAF2CFD46E80057D934 /* HealthDataWatchTests */,
-			);
 			name = HealthDataWatchTests;
 			packageProductDependencies = (
 			);
@@ -327,9 +273,6 @@
 			);
 			dependencies = (
 				FACB1EB82CFD46E80057D934 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				FACB1EB92CFD46E80057D934 /* HealthDataWatchUITests */,
 			);
 			name = HealthDataWatchUITests;
 			packageProductDependencies = (
@@ -506,11 +449,6 @@
 			isa = PBXTargetDependency;
 			target = FACB1E9C2CFD46E50057D934 /* HealthDataWatch */;
 			targetProxy = FACB1EB72CFD46E80057D934 /* PBXContainerItemProxy */;
-		};
-		FACB1EBF2CFD46E80057D934 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FACB1E9C2CFD46E50057D934 /* HealthDataWatch */;
-			targetProxy = FACB1EBE2CFD46E80057D934 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
