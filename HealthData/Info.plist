@@ -20,6 +20,10 @@
     <string>건강 데이터를 분석하고 맞춤형 서비스를 제공하기 위해 건강 데이터 접근 권한이 필요합니다.</string>
     <key>NSHealthUpdateUsageDescription</key>
     <string>건강 데이터를 업데이트하고 동기화하기 위해 건강 데이터 쓰기 권한이 필요합니다.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>사용자의 위치 기반 건강 데이터 분석을 위해 위치 정보가 필요합니다.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>사용자의 위치 기반 건강 데이터 분석을 위해 위치 정보가 필요합니다.</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>

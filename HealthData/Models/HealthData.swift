@@ -1,9 +1,19 @@
 import Foundation
 import HealthKit
+import CoreLocation
+
+struct UserInfo: Codable {
+    let bloodType: String?
+    let biologicalSex: String?
+    let birthDate: String?
+    let latitude: Double?
+    let longitude: Double?
+}
 
 struct HealthData: Codable {
     let userId: String
     let provider: HealthProvider
+    let userInfo: UserInfo
     let measurements: [HealthMeasurement]
     let timestamp: Date
     
@@ -37,7 +47,7 @@ struct HealthMeasurement: Codable {
 }
 
 extension HealthData {
-    static func from(healthKitData: [HKSample]) -> HealthData {
+    static func from(healthKitData: [HKSample], userInfo: UserInfo) -> HealthData {
         // HKSample 데이터를 HealthData 모델로 변환
         let measurements = healthKitData.compactMap { sample -> HealthMeasurement? in
             guard let quantitySample = sample as? HKQuantitySample else { return nil }
@@ -56,6 +66,7 @@ extension HealthData {
         return HealthData(
             userId: UserDefaults.standard.string(forKey: "userId") ?? "",
             provider: .apple,
+            userInfo: userInfo,
             measurements: measurements,
             timestamp: Date()
         )

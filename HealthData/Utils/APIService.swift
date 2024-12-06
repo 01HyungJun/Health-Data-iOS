@@ -119,10 +119,9 @@ class APIService {
     func fetchHealthData(for userId: String) async throws -> HealthData {
         try await healthKitManager.requestAuthorization()
         
-        // iPhone 데이터 가져오기
-        let iPhoneData = try await healthKitManager.fetchAllHealthData()
-        
-        return HealthData.from(healthKitData: iPhoneData)
+        // iPhone 데이터와 사용자 정보 가져오기
+        let healthData = try await healthKitManager.fetchAllHealthData()
+        return healthData
     }
 }
 
