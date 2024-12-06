@@ -32,6 +32,11 @@ struct ParticipationView: View {
     // ViewModel
     @StateObject private var viewModel = ParticipationViewModel()
     
+    // 약관 동의 유효성 검사
+    private var isAgreementValid: Bool {
+        healthDataAgreement && termsOfUse && personalInfo && locationInfo
+    }
+    
     // 폼 유효성 검사
     private var isFormValid: Bool {
         !email.isEmpty && !password.isEmpty &&
@@ -46,11 +51,8 @@ struct ParticipationView: View {
                     ScrollView {
                         VStack(spacing: 20) {
                             headerSection
-                            formSection
                             socialLoginButtons
-                            healthDataSection
                             agreementSection
-                            bottomButtons
                         }
                         .padding()
                         .frame(minWidth: geometry.size.width)
@@ -64,7 +66,7 @@ struct ParticipationView: View {
                             type: selectedAgreement ?? .terms,
                             isPresented: $showAgreementOverlay
                         )
-                        .zIndex(1) // 다른 뷰 위에 표시되도록 zIndex 설정
+                        .zIndex(1)
                     }
                     
                     if viewModel.showSuccess {
@@ -128,20 +130,32 @@ struct ParticipationView: View {
     }
     
     private var socialLoginButtons: some View {
-        HStack(spacing: 15) {
+        VStack(spacing: 15) {
             ForEach(AuthProvider.allCases, id: \.self) { provider in
                 Button(action: {
-                    selectedLoginProvider = provider.rawValue
+                    if isAgreementValid {
+                        Task {
+                            await viewModel.authenticateAndFetchHealth(with: provider)
+                        }
+                    } else {
+                        viewModel.errorMessage = "모든 약관에 동의해주세요"
+                        viewModel.showError = true
+                    }
                 }) {
-                    Text(provider.rawValue.capitalized)
-                        .frame(maxWidth: .infinity)
-                        .padding(8)
-                        .background(selectedLoginProvider == provider.rawValue ? 
-                            Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
-                        .cornerRadius(8)
+                    HStack {
+                        Image(systemName: provider == .samsung ? "s.circle.fill" :
+                                       provider == .apple ? "apple.logo" : "g.circle.fill")
+                        Text("\(provider.rawValue.capitalized)로 계속하기")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
             }
         }
+        .padding(.vertical, 20)
     }
     
     private var healthDataSection: some View {
@@ -213,53 +227,6 @@ struct ParticipationView: View {
                 }
             }
         }
-    }
-    
-    private var bottomButtons: some View {
-        HStack(spacing: 15) {
-            Button(action: {
-                resetForm()
-            }) {
-                Text("Reset")
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(Color.gray)
-                    .cornerRadius(10)
-            }
-            
-            Button(action: {
-                Task {
-                    await viewModel.authenticate(email: email, password: password)
-                }
-            }) {
-                Text("Verify")
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(isFormValid ? Color.blue : Color.gray)
-                    .cornerRadius(10)
-            }
-            .disabled(!isFormValid)
-            
-            Button(action: {
-                Task {
-                    if let provider = selectedLoginProvider {
-                        await viewModel.authenticateAndFetchHealth(with: AuthProvider(rawValue: provider)!)
-                    }
-                }
-            }) {
-                Text("Login")
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(selectedLoginProvider != nil ? Color.blue : Color.gray)
-                    .cornerRadius(10)
-            }
-            .disabled(selectedLoginProvider == nil)
-        }
-        .padding(.horizontal)
-        .padding(.vertical, 20)
     }
     
     private func resetForm() {
