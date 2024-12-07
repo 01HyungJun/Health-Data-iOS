@@ -32,6 +32,10 @@ struct ParticipationView: View {
     // ViewModel
     @StateObject private var viewModel = ParticipationViewModel()
     
+    // 프로젝트 선택 상태
+    @State private var selectedProjectId: Int?
+    @State private var showProjectPicker = false
+    
     // 약관 동의 유효성 검사
     private var isAgreementValid: Bool {
         healthDataAgreement && termsOfUse && personalInfo && locationInfo
@@ -52,6 +56,7 @@ struct ParticipationView: View {
                         VStack(spacing: 20) {
                             headerSection
                             socialLoginButtons
+                            projectSelectionSection
                             agreementSection
                         }
                         .padding()
@@ -90,6 +95,10 @@ struct ParticipationView: View {
             .navigationBarHidden(true)
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .task {
+            // 뷰가 나타날 때 프로젝트 목록 가져오기
+            await viewModel.fetchProjects()
+        }
     }
     
     // MARK: - View Components
@@ -185,6 +194,45 @@ struct ParticipationView: View {
                 ))
             }
         }
+    }
+    
+    private var projectSelectionSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("프로젝트 선택")
+                .font(.headline)
+            
+            Menu {
+                ForEach(viewModel.projects) { project in
+                    Button(action: {
+                        selectedProjectId = project.id
+                    }) {
+                        HStack {
+                            Text(project.projectName)
+                            if selectedProjectId == project.id {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(selectedProjectId.flatMap { id in
+                        viewModel.projects.first { $0.id == id }?.projectName
+                    } ?? "프로젝트를 선택하세요")
+                    .foregroundColor(selectedProjectId == nil ? .gray : .primary)
+                    
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .foregroundColor(.gray)
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray.opacity(0.5))
+                )
+            }
+        }
+        .padding(.horizontal)
     }
     
     // 약관 보기 기능 수정

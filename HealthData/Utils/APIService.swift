@@ -18,11 +18,16 @@ class APIService {
     private let healthKitManager = HealthKitManager.shared
     private var appleSignInDelegate: AppleSignInDelegate?
     
+    // MARK: - API Constants
+    // private let baseURL = "http://127.0.0.1:8080" // 로컬 서버
+    private let baseURL = "http://192.168.0.52:8080" // 로컬 서버
+    private let session: URLSession
+    
     private init() {
-        // Google Sign In 초기화 - 나중에 SDK 설치 후 주석 해제
-        // GIDSignIn.sharedInstance.configuration = GIDConfiguration(
-        //     clientID: Config.googleClientId
-        // )
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 300
+        self.session = URLSession(configuration: configuration)
     }
     
     // 소셜 로그인 및 헬스 데이터 가져오기를 한번에 처리
@@ -56,7 +61,7 @@ class APIService {
                 
                 let authorizationController = ASAuthorizationController(authorizationRequests: [request])
                 
-                // delegate 객체를 강한 참조로 유지
+                // delegate 객체를 강한 참조로 ��지
                 let delegate = AppleSignInDelegate { credential, error in
                     if let error = error {
                         continuation.resume(throwing: APIError.socialAuthError(error.localizedDescription))
@@ -119,9 +124,38 @@ class APIService {
     func fetchHealthData(for userId: String) async throws -> HealthData {
         try await healthKitManager.requestAuthorization()
         
-        // iPhone 데이터와 사용자 정보 가져오기
+        // iPhone 데이터와 사용자 정보 가져오���
         let healthData = try await healthKitManager.fetchAllHealthData()
         return healthData
+    }
+    
+    func fetchProjects() async throws -> [Project] {
+        guard let url = URL(string: "\(baseURL)/api/v1/projects") else {
+            throw APIError.invalidURL
+        }
+        
+        let (data, response) = try await session.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw APIError.invalidResponse
+        }
+        
+        // JSON 디코딩 디버깅
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("📝 받은 JSON 데이터: \(jsonString)")
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let projectResponse = try decoder.decode(ProjectResponse.self, from: data)
+            let projects = projectResponse.projectList
+            print("✅ 프로젝트 파싱 성공: \(projects.count)개")
+            return projects
+        } catch {
+            print("❌ JSON 파싱 에러: \(error)")
+            throw error
+        }
     }
 }
 

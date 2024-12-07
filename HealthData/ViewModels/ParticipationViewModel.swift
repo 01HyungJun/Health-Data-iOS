@@ -6,6 +6,7 @@ class ParticipationViewModel: ObservableObject {
     @Published var showError = false
     @Published var errorMessage = ""
     @Published var showSuccess = false
+    @Published var projects: [Project] = []
     
     private let apiService = APIService.shared
     
@@ -89,6 +90,20 @@ class ParticipationViewModel: ObservableObject {
                 isLoading = false
                 showError = true
                 errorMessage = error.localizedDescription
+            }
+        }
+    }
+    
+    func fetchProjects() async {
+        do {
+            let fetchedProjects = try await apiService.fetchProjects()
+            DispatchQueue.main.async {
+                self.projects = fetchedProjects
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "프로젝트 목록을 가져오는데 실패했습니다: \(error.localizedDescription)"
+                self.showError = true
             }
         }
     }
