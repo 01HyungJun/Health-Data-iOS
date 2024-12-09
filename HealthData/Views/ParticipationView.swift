@@ -58,6 +58,7 @@ struct ParticipationView: View {
                             socialLoginButtons
                             projectSelectionSection
                             agreementSection
+                            bottomButtons
                         }
                         .padding()
                         .frame(minWidth: geometry.size.width)
@@ -201,35 +202,41 @@ struct ParticipationView: View {
             Text("프로젝트 선택")
                 .font(.headline)
             
-            Menu {
-                ForEach(viewModel.projects) { project in
-                    Button(action: {
-                        selectedProjectId = project.id
-                    }) {
-                        HStack {
-                            Text(project.projectName)
-                            if selectedProjectId == project.id {
-                                Image(systemName: "checkmark")
+            if viewModel.projects.isEmpty {
+                Text("프로젝트 목록을 불러오는 중...")
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                Menu {
+                    ForEach(viewModel.projects) { project in
+                        Button(action: {
+                            selectedProjectId = project.id
+                        }) {
+                            HStack {
+                                Text(project.projectName)
+                                if selectedProjectId == project.id {
+                                    Image(systemName: "checkmark")
+                                }
                             }
                         }
                     }
+                } label: {
+                    HStack {
+                        Text(selectedProjectId.flatMap { id in
+                            viewModel.projects.first { $0.id == id }?.projectName
+                        } ?? "프로젝트를 선택하세요")
+                        .foregroundColor(selectedProjectId == nil ? .gray : .primary)
+                        
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray.opacity(0.5))
+                    )
                 }
-            } label: {
-                HStack {
-                    Text(selectedProjectId.flatMap { id in
-                        viewModel.projects.first { $0.id == id }?.projectName
-                    } ?? "프로젝트를 선택하세요")
-                    .foregroundColor(selectedProjectId == nil ? .gray : .primary)
-                    
-                    Spacer()
-                    Image(systemName: "chevron.down")
-                        .foregroundColor(.gray)
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray.opacity(0.5))
-                )
             }
         }
         .padding(.horizontal)
@@ -275,6 +282,48 @@ struct ParticipationView: View {
                 }
             }
         }
+    }
+    
+    private var bottomButtons: some View {
+        HStack(spacing: 15) {
+            Button(action: {
+                // 선택된 프로젝트와 약관 동의 상태 초기화
+                selectedProjectId = nil
+                healthDataAgreement = false
+                termsOfUse = false
+                personalInfo = false
+                locationInfo = false
+                viewModel.resetForm()
+            }) {
+                Text("Reset")
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(Color.gray)
+                    .cornerRadius(10)
+            }
+            
+            Button(action: {
+                guard let projectId = selectedProjectId else {
+                    viewModel.errorMessage = "프로젝트를 선택해주세요"
+                    viewModel.showError = true
+                    return
+                }
+                
+                Task {
+                    await viewModel.registerHealthData(projectId: projectId)
+                }
+            }) {
+                Text("Register")
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 20)
     }
     
     private func resetForm() {
