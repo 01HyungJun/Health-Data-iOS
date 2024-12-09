@@ -97,14 +97,51 @@ class ParticipationViewModel: ObservableObject {
     func fetchProjects() async {
         do {
             let fetchedProjects = try await apiService.fetchProjects()
-            DispatchQueue.main.async {
+            await MainActor.run {
                 self.projects = fetchedProjects
+                print("📋 프로젝트 목록 가져오기 성공: \(fetchedProjects.count)개")
             }
         } catch {
-            DispatchQueue.main.async {
+            await MainActor.run {
                 self.errorMessage = "프로젝트 목록을 가져오는데 실패했습니다: \(error.localizedDescription)"
                 self.showError = true
+                print("❌ 프로젝트 목록 가져오기 실패: \(error.localizedDescription)")
             }
         }
+    }
+    
+    func registerHealthData(projectId: Int) async {
+        await MainActor.run {
+            isLoading = true
+            showError = false
+            showSuccess = false
+        }
+        
+        do {
+            // 헬스 데이터 가져오기
+            let healthData = try await apiService.fetchHealthData(for: UserDefaults.standard.string(forKey: "userId") ?? "")
+            
+            // 서버에 데이터 전송
+            try await apiService.registerHealthData(healthData, projectId: projectId)
+            
+            await MainActor.run {
+                isLoading = false
+                showSuccess = true
+            }
+        } catch {
+            await MainActor.run {
+                isLoading = false
+                showError = true
+                errorMessage = "데이터 등록 실패: \(error.localizedDescription)"
+            }
+        }
+    }
+    
+    func resetForm() {
+        // 에러/성공 상태 초기화
+        showError = false
+        showSuccess = false
+        errorMessage = ""
+        isLoading = false
     }
 }

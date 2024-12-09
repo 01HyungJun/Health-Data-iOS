@@ -19,8 +19,7 @@ class APIService {
     private var appleSignInDelegate: AppleSignInDelegate?
     
     // MARK: - API Constants
-    // private let baseURL = "http://127.0.0.1:8080" // 로컬 서버
-    private let baseURL = "http://192.168.0.52:8080" // 로컬 서버
+    private let baseURL = "http://192.168.0.10:8080" // 나의 맥북 주소
     private let session: URLSession
     
     private init() {
@@ -61,7 +60,6 @@ class APIService {
                 
                 let authorizationController = ASAuthorizationController(authorizationRequests: [request])
                 
-                // delegate 객체를 강한 참조로 ��지
                 let delegate = AppleSignInDelegate { credential, error in
                     if let error = error {
                         continuation.resume(throwing: APIError.socialAuthError(error.localizedDescription))
@@ -124,7 +122,7 @@ class APIService {
     func fetchHealthData(for userId: String) async throws -> HealthData {
         try await healthKitManager.requestAuthorization()
         
-        // iPhone 데이터와 사용자 정보 가져오���
+        // iPhone 데이터와 사용자 정보 가져오기
         let healthData = try await healthKitManager.fetchAllHealthData()
         return healthData
     }
@@ -156,6 +154,48 @@ class APIService {
             print("❌ JSON 파싱 에러: \(error)")
             throw error
         }
+    }
+    
+    func registerHealthData(_ healthData: HealthData, projectId: Int) async throws {
+        let url = URL(string: "\(baseURL)/api/v1/health")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // HealthDataRequest 생성
+        let healthDataRequest = HealthDataRequest(
+            projectId: projectId,
+            healthData: healthData
+        )
+        
+        // 요청 데이터 인코딩
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let requestData = try encoder.encode(healthDataRequest)
+        request.httpBody = requestData
+        
+        // 요청 데이터 로깅
+        if let jsonString = String(data: requestData, encoding: .utf8) {
+            print("\n📤 전송할 데이터:")
+            print(jsonString)
+        }
+        
+        let (data, response) = try await session.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        
+        print("\n📡 서버 응답 상태 코드: \(httpResponse.statusCode)")
+        
+        if httpResponse.statusCode != 200 {
+            if let errorString = String(data: data, encoding: .utf8) {
+                print("❌ 서버 에러 응답: \(errorString)")
+            }
+            throw APIError.invalidResponse
+        }
+        
+        print("✅ 건강 데이터 등록 성공")
     }
 }
 
