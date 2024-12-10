@@ -11,7 +11,7 @@ struct UserInfo: Codable {
 }
 
 struct HealthData: Codable {
-    let userId: String
+    let email: String
     let provider: HealthProvider
     let userInfo: UserInfo
     let measurements: Measurements
@@ -80,7 +80,7 @@ extension HealthData {
         }
         
         return HealthData(
-            userId: UserDefaults.standard.string(forKey: "userId") ?? "",
+            email: UserDefaults.standard.string(forKey: "email") ?? "",
             provider: .apple,
             userInfo: userInfo,
             measurements: measurements,
@@ -94,6 +94,24 @@ extension HealthData {
             return .count()
         case HKQuantityTypeIdentifier.heartRate.rawValue:
             return HKUnit.count().unitDivided(by: .minute())
+        case HKQuantityTypeIdentifier.bloodPressureSystolic.rawValue,
+             HKQuantityTypeIdentifier.bloodPressureDiastolic.rawValue:
+            return .millimeterOfMercury()
+        case HKQuantityTypeIdentifier.oxygenSaturation.rawValue:
+            return .percent()
+        case HKQuantityTypeIdentifier.bodyTemperature.rawValue:
+            return .degreeCelsius()
+        case HKQuantityTypeIdentifier.respiratoryRate.rawValue:
+            return HKUnit.count().unitDivided(by: .minute())
+        case HKQuantityTypeIdentifier.height.rawValue:
+            return .meterUnit(with: .centi)
+        case HKQuantityTypeIdentifier.bodyMass.rawValue:
+            return .gramUnit(with: .kilo)
+        case HKQuantityTypeIdentifier.runningSpeed.rawValue:
+            return HKUnit.meter().unitDivided(by: .second())
+        case HKQuantityTypeIdentifier.activeEnergyBurned.rawValue,
+             HKQuantityTypeIdentifier.basalEnergyBurned.rawValue:
+            return .kilocalorie()
         default:
             return .count()
         }

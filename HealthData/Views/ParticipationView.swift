@@ -145,7 +145,18 @@ struct ParticipationView: View {
                 Button(action: {
                     if isAgreementValid {
                         Task {
-                            await viewModel.authenticateAndFetchHealth(with: provider)
+                            do {
+                                await viewModel.authenticateAndFetchHealth(with: provider)
+                            } catch let error as APIError {
+                                switch error {
+                                case .socialAuthError(let message):
+                                    viewModel.errorMessage = message
+                                    viewModel.showError = true
+                                default:
+                                    viewModel.errorMessage = "인증에 실패했습니다"
+                                    viewModel.showError = true
+                                }
+                            }
                         }
                     } else {
                         viewModel.errorMessage = "모든 약관에 동의해주세요"

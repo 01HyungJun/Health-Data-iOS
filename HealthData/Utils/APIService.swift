@@ -35,7 +35,7 @@ class APIService {
         let authResult = try await authenticateUser(with: provider)
         
         // 2. 헬스 데이터 가져오기
-        let healthData = try await fetchHealthData(for: authResult.userId)
+        let healthData = try await fetchHealthData(for: authResult.email)
         
         return (authResult, healthData)
     }
@@ -66,20 +66,25 @@ class APIService {
                         return
                     }
                     
-                    guard let credential = credential else {
-                        continuation.resume(throwing: APIError.authenticationError)
+                    guard let credential = credential,
+                          let email = credential.email else {
+                        continuation.resume(throwing: APIError.socialAuthError(
+                            "이메일 제공에 동의해주세요. 건강 데이터 연동을 위해 이메일 정보가 필요합니다."
+                        ))
                         return
                     }
                     
                     let authResult = AuthenticationResult(
-                        userId: credential.user,
+                        email: email,
                         authToken: credential.identityToken?.base64EncodedString() ?? "",
                         provider: .apple
                     )
+                    
+                    UserDefaults.standard.set(email, forKey: "email")
+                    
                     continuation.resume(returning: authResult)
                 }
                 
-                // delegate를 속성에 저장하고 컨트롤러에 설정
                 self.appleSignInDelegate = delegate
                 authorizationController.delegate = delegate
                 
@@ -113,13 +118,13 @@ class APIService {
         // TODO: 실제 인증 로직 구현
         // 임시로 성공 응답 반환
         return AuthenticationResult(
-            userId: "test_user_id",
+            email: "test_user_id",
             authToken: "test_token",
             provider: .apple
         )
     }
     
-    func fetchHealthData(for userId: String) async throws -> HealthData {
+    func fetchHealthData(for email: String) async throws -> HealthData {
         try await healthKitManager.requestAuthorization()
         
         // iPhone 데이터와 사용자 정보 가져오기
@@ -239,7 +244,7 @@ private class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate {
 
 // 인증 결과를 담는 구조체
 struct AuthenticationResult {
-    let userId: String
+    let email: String
     let authToken: String
     let provider: AuthProvider
 }

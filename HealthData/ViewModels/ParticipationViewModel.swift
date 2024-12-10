@@ -22,7 +22,7 @@ class ParticipationViewModel: ObservableObject {
             let authResult = try await apiService.authenticate(email: email, password: password)
             
             // 인증 성공 시 헬스 데이터 가져오기 시도
-            let healthData = try await apiService.fetchHealthData(for: authResult.userId)
+            let healthData = try await apiService.fetchHealthData(for: authResult.email)
             
             await MainActor.run {
                 isLoading = false
@@ -64,7 +64,7 @@ class ParticipationViewModel: ObservableObject {
             let result = try await apiService.authenticateAndFetchHealthData(with: provider)
             
             // UserDefaults 저장
-            UserDefaults.standard.set(result.0.userId, forKey: "userId")
+            UserDefaults.standard.set(result.0.email, forKey: "email")
             
             await MainActor.run {
                 isLoading = false
@@ -75,6 +75,8 @@ class ParticipationViewModel: ObservableObject {
                 isLoading = false
                 showError = true
                 switch error {
+                case .socialAuthError(let message):
+                    errorMessage = message
                 case .authenticationError:
                     errorMessage = "인증 실패: 유효하지 않은 계정입니다"
                 case .networkError:
@@ -119,7 +121,7 @@ class ParticipationViewModel: ObservableObject {
         
         do {
             // 헬스 데이터 가져오기
-            let healthData = try await apiService.fetchHealthData(for: UserDefaults.standard.string(forKey: "userId") ?? "")
+            let healthData = try await apiService.fetchHealthData(for: UserDefaults.standard.string(forKey: "email") ?? "")
             
             // 서버에 데이터 전송
             try await apiService.registerHealthData(healthData, projectId: projectId)
