@@ -70,12 +70,7 @@ class HealthKitManager: NSObject, ObservableObject {
         }
     }
     
-    func fetchUserInfo() async throws -> UserInfo {
-        // 위치 정보 한 번만 가져오기
-        if locationManager.authorizationStatus == .authorizedWhenInUse {
-            locationManager.requestLocation() // 한 번만 위치 요청
-        }
-        
+    func fetchUserInfo(projectId: Int) async throws -> UserInfo {
         // 혈액형 가져오기
         let bloodTypeObject = try? healthStore.bloodType()
         let bloodType = bloodTypeObject?.bloodType.toString() ?? "Unknown"
@@ -88,42 +83,66 @@ class HealthKitManager: NSObject, ObservableObject {
         let birthComponents = try? healthStore.dateOfBirthComponents()
         let year = birthComponents?.year ?? 0
         let month = birthComponents?.month ?? 0
-        let birthDateString = String(format: "%04d-%02d", year, month)
+        let day = birthComponents?.day ?? 1
+        let birthDateString = String(format: "%04d-%02d-%02d", year, month, day)
         
-        // 권한 상태 로깅
-        print("🔐 권한 상태:")
-        print("   - 위치 권한: \(locationManager.authorizationStatus.rawValue)")
-        print("   - HealthKit 권한: \(HKHealthStore.isHealthDataAvailable())")
+        // 이메일과 제공자 설정
+        let email = UserDefaults.standard.string(forKey: "email") ?? "unknown@example.com"
+        let provider = UserDefaults.standard.string(forKey: "provider") ?? "unknown"
         
         return UserInfo(
+            projectId: projectId,
+            email: email,
+            provider: provider,
             bloodType: bloodType,
             biologicalSex: biologicalSex,
-            birthDate: birthDateString,
-            latitude: currentLocation?.coordinate.latitude,
-            longitude: currentLocation?.coordinate.longitude
+            birthDate: birthDateString
         )
     }
     
-    func fetchAllHealthData() async throws -> HealthData {
+    func fetchAllHealthData(projectId: Int) async throws -> HealthData {
         let samples = try await fetchData(for: allTypes)
-        let userInfo = try await fetchUserInfo()
-        return HealthData.from(healthKitData: samples, userInfo: userInfo)
+        let userInfo = try await fetchUserInfo(projectId: projectId)
+        
+        // 위치 정보를 포함한 HealthData 생성
+        var healthData = HealthData.from(healthKitData: samples, userInfo: userInfo)
+        
+        // 위치 정보를 measurements에 추가
+        if let location = currentLocation {
+            healthData = HealthData(
+                userInfo: healthData.userInfo,
+                measurements: Measurements(
+                    stepCount: healthData.measurements.stepCount,
+                    heartRate: healthData.measurements.heartRate,
+                    bloodPressureSystolic: healthData.measurements.bloodPressureSystolic,
+                    bloodPressureDiastolic: healthData.measurements.bloodPressureDiastolic,
+                    oxygenSaturation: healthData.measurements.oxygenSaturation,
+                    bodyTemperature: healthData.measurements.bodyTemperature,
+                    respiratoryRate: healthData.measurements.respiratoryRate,
+                    height: healthData.measurements.height,
+                    weight: healthData.measurements.weight,
+                    runningSpeed: healthData.measurements.runningSpeed,
+                    activeEnergy: healthData.measurements.activeEnergy,
+                    basalEnergy: healthData.measurements.basalEnergy,
+                    latitude: location.coordinate.latitude,
+                    longitude: location.coordinate.longitude
+                )
+            )
+        }
+        
+        return healthData
     }
     
     private func fetchData(for types: Set<HKSampleType>) async throws -> [HKSample] {
         var allSamples: [HKSample] = []
         
-        // 사용자 정보 로깅
-        let userInfo = try await fetchUserInfo()
+        // 사용자 정보 로깅 (임시 projectId 0 사용)
+        let userInfo = try await fetchUserInfo(projectId: 0)  // 로깅용이라 임시값 사용
         print("\n📱 사용자 정보:")
         print("   - 혈액형: \(userInfo.bloodType ?? "Unknown")")
         print("   - 성별: \(userInfo.biologicalSex ?? "Unknown")")
         print("   - 생년월: \(userInfo.birthDate ?? "Unknown")")
-        if let latitude = userInfo.latitude, let longitude = userInfo.longitude {
-            print("   - 위치: (\(latitude), \(longitude))")
-        } else {
-            print("   - 위치: Unknown")
-        }
+        
         print("\n📊 건강 데이터:")
         
         for type in types {
