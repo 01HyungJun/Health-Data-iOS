@@ -146,7 +146,13 @@ struct ParticipationView: View {
                     if isAgreementValid {
                         Task {
                             do {
-                                await viewModel.authenticateAndFetchHealth(with: provider)
+                                // selectedProjectId가 있을 때만 소셜 로그인 진행
+                                if let projectId = selectedProjectId {
+                                    await viewModel.authenticateAndFetchHealth(with: provider, projectId: projectId)
+                                } else {
+                                    viewModel.errorMessage = "프로젝트를 선택해주세요"
+                                    viewModel.showError = true
+                                }
                             } catch let error as APIError {
                                 switch error {
                                 case .socialAuthError(let message):
