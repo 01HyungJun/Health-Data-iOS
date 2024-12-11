@@ -3,25 +3,17 @@ import HealthKit
 import CoreLocation
 
 struct UserInfo: Codable {
+    let projectId: Int
+    let email: String
+    let provider: String
     let bloodType: String?
     let biologicalSex: String?
     let birthDate: String?
-    let latitude: Double?
-    let longitude: Double?
 }
 
 struct HealthData: Codable {
-    let email: String
-    let provider: HealthProvider
     let userInfo: UserInfo
     let measurements: Measurements
-    let timestamp: Date
-    
-    enum HealthProvider: String, Codable {
-        case samsung
-        case apple
-        case google
-    }
 }
 
 struct Measurements: Codable {
@@ -37,55 +29,40 @@ struct Measurements: Codable {
     let runningSpeed: Double?
     let activeEnergy: Double?
     let basalEnergy: Double?
+    let latitude: Double?
+    let longitude: Double?
 }
 
 extension HealthData {
     static func from(healthKitData: [HKSample], userInfo: UserInfo) -> HealthData {
-        var measurements = Measurements(
-            stepCount: nil,
-            heartRate: nil,
-            bloodPressureSystolic: nil,
-            bloodPressureDiastolic: nil,
-            oxygenSaturation: nil,
-            bodyTemperature: nil,
-            respiratoryRate: nil,
-            height: nil,
-            weight: nil,
-            runningSpeed: nil,
-            activeEnergy: nil,
-            basalEnergy: nil
+        let measurements = Measurements(
+            stepCount: getValue(from: healthKitData, for: .stepCount),
+            heartRate: getValue(from: healthKitData, for: .heartRate),
+            bloodPressureSystolic: getValue(from: healthKitData, for: .bloodPressureSystolic),
+            bloodPressureDiastolic: getValue(from: healthKitData, for: .bloodPressureDiastolic),
+            oxygenSaturation: getValue(from: healthKitData, for: .oxygenSaturation),
+            bodyTemperature: getValue(from: healthKitData, for: .bodyTemperature),
+            respiratoryRate: getValue(from: healthKitData, for: .respiratoryRate),
+            height: getValue(from: healthKitData, for: .height),
+            weight: getValue(from: healthKitData, for: .bodyMass),
+            runningSpeed: getValue(from: healthKitData, for: .runningSpeed),
+            activeEnergy: getValue(from: healthKitData, for: .activeEnergyBurned),
+            basalEnergy: getValue(from: healthKitData, for: .basalEnergyBurned),
+            latitude: nil,
+            longitude: nil
         )
-        
-        for sample in healthKitData {
-            guard let quantitySample = sample as? HKQuantitySample else { continue }
-            
-            let value = quantitySample.quantity.doubleValue(for: getUnit(for: quantitySample.quantityType))
-            
-            switch quantitySample.quantityType.identifier {
-            case HKQuantityTypeIdentifier.stepCount.rawValue:
-                measurements = Measurements(stepCount: value, heartRate: measurements.heartRate,
-                    bloodPressureSystolic: measurements.bloodPressureSystolic,
-                    bloodPressureDiastolic: measurements.bloodPressureDiastolic,
-                    oxygenSaturation: measurements.oxygenSaturation,
-                    bodyTemperature: measurements.bodyTemperature,
-                    respiratoryRate: measurements.respiratoryRate,
-                    height: measurements.height,
-                    weight: measurements.weight,
-                    runningSpeed: measurements.runningSpeed,
-                    activeEnergy: measurements.activeEnergy,
-                    basalEnergy: measurements.basalEnergy)
-            default:
-                break
-            }
-        }
         
         return HealthData(
-            email: UserDefaults.standard.string(forKey: "email") ?? "",
-            provider: .apple,
             userInfo: userInfo,
-            measurements: measurements,
-            timestamp: Date()
+            measurements: measurements
         )
+    }
+    
+    private static func getValue(from samples: [HKSample], for identifier: HKQuantityTypeIdentifier) -> Double? {
+        guard let sample = samples.first(where: { $0.sampleType.identifier == identifier.rawValue }) as? HKQuantitySample else {
+            return nil
+        }
+        return sample.quantity.doubleValue(for: getUnit(for: sample.quantityType))
     }
     
     private static func getUnit(for quantityType: HKQuantityType) -> HKUnit {
