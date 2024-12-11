@@ -10,7 +10,7 @@ class ParticipationViewModel: ObservableObject {
     
     private let apiService = APIService.shared
     
-    func authenticate(email: String, password: String) async {
+    func authenticate(email: String, password: String, projectId: Int) async {
         await MainActor.run { 
             isLoading = true 
             showError = false
@@ -22,7 +22,7 @@ class ParticipationViewModel: ObservableObject {
             let authResult = try await apiService.authenticate(email: email, password: password)
             
             // 인증 성공 시 헬스 데이터 가져오기 시도
-            let healthData = try await apiService.fetchHealthData(for: authResult.email)
+            let healthData = try await apiService.fetchHealthData(for: authResult.email, projectId: projectId)
             
             await MainActor.run {
                 isLoading = false
@@ -52,7 +52,7 @@ class ParticipationViewModel: ObservableObject {
         }
     }
     
-    func authenticateAndFetchHealth(with provider: AuthProvider) async {
+    func authenticateAndFetchHealth(with provider: AuthProvider, projectId: Int) async {
         await MainActor.run {
             isLoading = true
             showError = false
@@ -61,7 +61,7 @@ class ParticipationViewModel: ObservableObject {
         
         do {
             // 인증 처리
-            let result = try await apiService.authenticateAndFetchHealthData(with: provider)
+            let result = try await apiService.authenticateAndFetchHealthData(with: provider, projectId: projectId)
             
             // UserDefaults 저장
             UserDefaults.standard.set(result.0.email, forKey: "email")
@@ -121,7 +121,10 @@ class ParticipationViewModel: ObservableObject {
         
         do {
             // 헬스 데이터 가져오기
-            let healthData = try await apiService.fetchHealthData(for: UserDefaults.standard.string(forKey: "email") ?? "")
+            let healthData = try await apiService.fetchHealthData(
+                for: UserDefaults.standard.string(forKey: "email") ?? "",
+                projectId: projectId
+            )
             
             // 서버에 데이터 전송
             try await apiService.registerHealthData(healthData, projectId: projectId)

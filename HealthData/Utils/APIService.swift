@@ -30,12 +30,16 @@ class APIService {
     }
     
     // 소셜 로그인 및 헬스 데이터 가져오기를 한번에 처리
-    func authenticateAndFetchHealthData(with provider: AuthProvider) async throws -> (AuthenticationResult, HealthData) {
+    func authenticateAndFetchHealthData(with provider: AuthProvider, projectId: Int) async throws -> (AuthenticationResult, HealthData) {
         // 1. 소셜 로그인 인증
         let authResult = try await authenticateUser(with: provider)
         
+        // 이메일과 제공자 저장
+        UserDefaults.standard.set(authResult.email, forKey: "email")
+        UserDefaults.standard.set(provider.rawValue, forKey: "provider")
+        
         // 2. 헬스 데이터 가져오기
-        let healthData = try await fetchHealthData(for: authResult.email)
+        let healthData = try await fetchHealthData(for: authResult.email, projectId: projectId)
         
         return (authResult, healthData)
     }
@@ -124,11 +128,11 @@ class APIService {
         )
     }
     
-    func fetchHealthData(for email: String) async throws -> HealthData {
+    func fetchHealthData(for email: String, projectId: Int) async throws -> HealthData {
         try await healthKitManager.requestAuthorization()
         
-        // iPhone 데이터와 사용자 정보 가져오기
-        let healthData = try await healthKitManager.fetchAllHealthData()
+        // iPhone 데이터와 ��용자 정보 가져오기
+        let healthData = try await healthKitManager.fetchAllHealthData(projectId: projectId)
         return healthData
     }
     
@@ -169,8 +173,15 @@ class APIService {
         
         // HealthDataRequest 생성
         let healthDataRequest = HealthDataRequest(
-            projectId: projectId,
-            healthData: healthData
+            userInfo: UserInfo(
+                projectId: projectId,
+                email: healthData.userInfo.email,
+                provider: healthData.userInfo.provider,
+                bloodType: healthData.userInfo.bloodType,
+                biologicalSex: healthData.userInfo.biologicalSex,
+                birthDate: healthData.userInfo.birthDate
+            ),
+            measurements: healthData.measurements
         )
         
         // 요청 데이터 인코딩
