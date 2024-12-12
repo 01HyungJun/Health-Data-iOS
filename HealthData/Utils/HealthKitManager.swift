@@ -86,13 +86,14 @@ class HealthKitManager: NSObject, ObservableObject {
         let day = birthComponents?.day ?? 1
         let birthDateString = String(format: "%04d-%02d-%02d", year, month, day)
         
-        // 이메일과 제공자 설정
-        let email = UserDefaults.standard.string(forKey: "email") ?? "unknown@example.com"
+        // UserDefaults에서 저장된 이메일과 provider 정보를 가져옴
+        // 앱이 실행 중이지 않았어도 이전에 저장한 값을 읽어올 수 있음
+        let email = UserDefaults.standard.string(forKey: "userEmail") ?? "unknown@example.com"
         let provider = UserDefaults.standard.string(forKey: "provider") ?? "unknown"
         
         return UserInfo(
             projectId: projectId,
-            email: email,
+            email: email,  // UserDefaults에서 가져온 이메일 사용
             provider: provider,
             bloodType: bloodType,
             biologicalSex: biologicalSex,

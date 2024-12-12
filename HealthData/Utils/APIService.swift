@@ -34,8 +34,11 @@ class APIService {
         // 1. 소셜 로그인 인증
         let authResult = try await authenticateUser(with: provider)
         
-        // 이메일과 제공자 저장
-        UserDefaults.standard.set(authResult.email, forKey: "email")
+        // UserDefaults에 이메일과 제공자 정보를 저장
+        // UserDefaults는 iOS에서 제공하는 간단한 데이터 저장소이다!
+        // 앱을 종료하고 다시 실행해도 이 정보가 유지됨
+        // 앱을 삭제하면 이 정보도 함께 삭제됨
+        UserDefaults.standard.set(authResult.email, forKey: "userEmail")
         UserDefaults.standard.set(provider.rawValue, forKey: "provider")
         
         // 2. 헬스 데이터 가져오기
@@ -70,23 +73,41 @@ class APIService {
                         return
                     }
                     
-                    guard let credential = credential,
-                          let email = credential.email else {
-                        continuation.resume(throwing: APIError.socialAuthError(
-                            "이메일 제공에 동의해주세요. 건강 데이터 연동을 위해 이메일 정보가 필요합니다."
-                        ))
+                    guard let credential = credential else {
+                        continuation.resume(throwing: APIError.authenticationError)
                         return
                     }
                     
-                    let authResult = AuthenticationResult(
-                        email: email,
-                        authToken: credential.identityToken?.base64EncodedString() ?? "",
-                        provider: .apple
-                    )
+                    // 1. 새로 받은 이메일이 있으면 UserDefaults에 저장하고 사용
+                    // 이렇게 저장된 이메일은 앱을 재시작해도 유지됨
+                    if let email = credential.email {
+                        UserDefaults.standard.set(email, forKey: "userEmail")
+                        let authResult = AuthenticationResult(
+                            email: email,
+                            authToken: credential.identityToken?.base64EncodedString() ?? "",
+                            provider: .apple
+                        )
+                        continuation.resume(returning: authResult)
+                        return
+                    }
                     
-                    UserDefaults.standard.set(email, forKey: "email")
+                    // 2. 새로 받은 이메일이 없으면 UserDefaults에 저장된 이메일을 사용
+                    // 이전에 로그인했던 기록이 있다면 저장된 이메일을 재사용
+                    if let savedEmail = UserDefaults.standard.string(forKey: "userEmail") {
+                        let authResult = AuthenticationResult(
+                            email: savedEmail,
+                            authToken: credential.identityToken?.base64EncodedString() ?? "",
+                            provider: .apple
+                        )
+                        continuation.resume(returning: authResult)
+                        return
+                    }
                     
-                    continuation.resume(returning: authResult)
+                    // 3. UserDefaults에 저장된 이메일도 없으면 에러
+                    // 이때는 Apple 로그인 설정에서 해당 앱을 삭제한 후 다시 시도.
+                    continuation.resume(throwing: APIError.socialAuthError(
+                        "이메일 정보를 찾을 수 없습니다. 앱을 삭제하고 다시 설치한 후 이메일 제공에 동의해주세요."
+                    ))
                 }
                 
                 self.appleSignInDelegate = delegate
@@ -131,7 +152,7 @@ class APIService {
     func fetchHealthData(for email: String, projectId: Int) async throws -> HealthData {
         try await healthKitManager.requestAuthorization()
         
-        // iPhone 데이터와 ��용자 정보 가져오기
+        // iPhone 데이터와 사용자 정보 가져오기
         let healthData = try await healthKitManager.fetchAllHealthData(projectId: projectId)
         return healthData
     }
