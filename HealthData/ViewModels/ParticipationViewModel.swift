@@ -63,8 +63,9 @@ class ParticipationViewModel: ObservableObject {
             // 인증 처리
             let result = try await apiService.authenticateAndFetchHealthData(with: provider, projectId: projectId)
             
-            // UserDefaults 저장
-            UserDefaults.standard.set(result.0.email, forKey: "email")
+            // UserDefaults에 프로젝트 ID와 이메일 저장
+            UserDefaults.standard.set(projectId, forKey: "lastProjectId")
+            UserDefaults.standard.set(result.0.email, forKey: "userEmail")
             
             await MainActor.run {
                 isLoading = false
@@ -113,6 +114,10 @@ class ParticipationViewModel: ObservableObject {
     }
     
     func registerHealthData(projectId: Int) async {
+        let backgroundTask = UIApplication.shared.beginBackgroundTask { 
+            UIApplication.shared.endBackgroundTask(UIBackgroundTaskIdentifier.invalid)
+        }
+        
         await MainActor.run {
             isLoading = true
             showError = false
@@ -122,12 +127,15 @@ class ParticipationViewModel: ObservableObject {
         do {
             // 헬스 데이터 가져오기
             let healthData = try await apiService.fetchHealthData(
-                for: UserDefaults.standard.string(forKey: "email") ?? "",
+                for: UserDefaults.standard.string(forKey: "userEmail") ?? "",
                 projectId: projectId
             )
             
             // 서버에 데이터 전송
             try await apiService.registerHealthData(healthData, projectId: projectId)
+            
+            // 성공 후 백그라운드 작업 시작 (즉시 실행은 하지 않음)
+            BackgroundTaskManager.shared.startBackgroundTaskWithDelay()
             
             await MainActor.run {
                 isLoading = false
@@ -140,6 +148,8 @@ class ParticipationViewModel: ObservableObject {
                 errorMessage = "데이터 등록 실패: \(error.localizedDescription)"
             }
         }
+        
+        UIApplication.shared.endBackgroundTask(backgroundTask)
     }
     
     func resetForm() {

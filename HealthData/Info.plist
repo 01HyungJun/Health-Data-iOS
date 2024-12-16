@@ -51,5 +51,14 @@
     <array>
         <string>shealth</string>
     </array>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>processing</string>
+    </array>
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.jaehyoung.healthdata.refresh</string>
+    </array>
 </dict>
 </plist>
