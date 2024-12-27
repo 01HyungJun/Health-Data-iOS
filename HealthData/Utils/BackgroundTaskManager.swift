@@ -6,6 +6,9 @@ class BackgroundTaskManager {
     private var isRunning = false
     private var nextCollectionWorkItem: DispatchWorkItem?
     
+    // 기기 잠금 상태 추적
+    private var isDeviceLocked = false
+    
     private init() {
         // 앱이 백그라운드로 전환될 때 알림 받기
         NotificationCenter.default.addObserver(
@@ -14,26 +17,69 @@ class BackgroundTaskManager {
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
+        
+        // 앱이 비활성화될 때 (잠금화면으로 전환될 때)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(deviceDidLock),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        
+        // 앱이 활성화될 때 (잠금해제될 때)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(deviceDidUnlock),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+    
+    // 기기가 잠금 상태가 되었을 때
+    @objc private func deviceDidLock() {
+        print("🔒 기기 잠금: \(Date())")
+        isDeviceLocked = true
+        // 실행 중인 작업 취소
+        nextCollectionWorkItem?.cancel()
+        nextCollectionWorkItem = nil
+        endBackgroundTask()
+    }
+    
+    // 기기가 잠금 해제되었을 때
+    @objc private func deviceDidUnlock() {
+        print("🔓 기기 잠금 해제: \(Date())")
+        isDeviceLocked = false
+        // 잠금 해제되면 데이터 수집 재시작
+        if isRunning {
+            scheduleNextCollection()
+        }
     }
     
     func startBackgroundTaskWithDelay() {
         print("\n🚀 백그라운드 작업 시작: \(Date())")
         isRunning = true
         
-        // 1분 후부터 시작
-        scheduleNextCollection(afterDelay: 60)
-        print("⏰ 1분 후 첫 실행 예정: \(Date(timeIntervalSinceNow: 60))")
+        // 기기가 잠금 상태가 아닐 때만 다음 수집 예약
+        if !isDeviceLocked {
+            scheduleNextCollection(afterDelay: 60)
+            print("⏰ 1분 후 첫 실행 예정: \(Date(timeIntervalSinceNow: 60))")
+        } else {
+            print("🔒 기기가 잠금 상태여서 데이터 수집을 시작하지 않습니다.")
+        }
     }
     
     private func scheduleNextCollection(afterDelay: TimeInterval = 60) {
-        guard isRunning else { return }
+        guard isRunning && !isDeviceLocked else { 
+            print("⏸ 데이터 수집 예약 취소: 실행 중지 또는 기기 잠금 상태")
+            return 
+        }
         
         // 이전 예약된 작업 취소
         nextCollectionWorkItem?.cancel()
         
         // 새로운 작업 생성
         let workItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
+            guard let self = self, !self.isDeviceLocked else { return }
             
             // 새로운 백그라운드 작업 시작
             self.backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
@@ -46,8 +92,10 @@ class BackgroundTaskManager {
                 await self.startNewDataCollection()
                 self.endBackgroundTask()
                 
-                // 다음 수집 예약
-                self.scheduleNextCollection()
+                // 다음 수집 예약 (기기가 잠금 상태가 아닐 때만)
+                if !self.isDeviceLocked {
+                    self.scheduleNextCollection()
+                }
             }
         }
         
