@@ -12,27 +12,39 @@ struct AgreementOverlay: View {
                     isPresented = false
                 }
             
-            VStack {
+            VStack(spacing: 16) {
                 Text(type.title)
                     .font(.headline)
-                    .foregroundColor(.white)
                     .padding()
+                    .foregroundColor(.primary)
                 
                 ScrollView {
                     Text(type.content)
+                        .foregroundColor(.primary)
                         .padding()
+                        .multilineTextAlignment(.leading)
                 }
-                .background(Color.white)
-                .cornerRadius(10)
-                .padding()
+                .frame(maxHeight: UIScreen.main.bounds.height * 0.6)
                 
-                Button("닫기") {
+                Button(action: {
                     isPresented = false
+                }) {
+                    Text("닫기")
+                        .foregroundColor(.white)
+                        .frame(width: 100)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
                 }
-                .foregroundColor(.white)
-                .padding()
+                .padding(.bottom)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(width: UIScreen.main.bounds.width * 0.9)
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color(UIColor.systemBackground))
+                    .shadow(radius: 10)
+            )
+            .padding()
         }
     }
 }
