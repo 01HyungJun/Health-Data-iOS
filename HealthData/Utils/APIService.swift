@@ -19,7 +19,7 @@ class APIService {
     private var appleSignInDelegate: AppleSignInDelegate?
     
     // MARK: - API Constants
-    private let baseURL = "http://192.168.0.10:8080" // 나의 맥북 주소
+    private let baseURL = "http://air.monomate.kr:8080"
     private let session: URLSession
     
     private init() {
