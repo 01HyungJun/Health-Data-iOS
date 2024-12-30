@@ -14,7 +14,6 @@
     <key>CFBundleName</key>
     <string>HealthData</string>
     <key>CFBundlePackageType</key>
-    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0</string>
     <key>CFBundleVersion</key>
