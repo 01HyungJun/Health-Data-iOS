@@ -22,7 +22,7 @@ class BackgroundTaskManager {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(deviceDidLock),
-            name: UIApplication.willResignActiveNotification,
+            name: UIApplication.protectedDataWillBecomeUnavailableNotification,
             object: nil
         )
         
@@ -30,14 +30,14 @@ class BackgroundTaskManager {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(deviceDidUnlock),
-            name: UIApplication.didBecomeActiveNotification,
+            name: UIApplication.protectedDataDidBecomeAvailableNotification,
             object: nil
         )
     }
     
     // 기기가 잠금 상태가 되었을 때
     @objc private func deviceDidLock() {
-        print("🔒 기기 잠금: \(Date())")
+        print("🔒 기기 잠금 상태 감지됨: \(Date())")
         isDeviceLocked = true
         // 실행 중인 작업 취소
         nextCollectionWorkItem?.cancel()
@@ -45,11 +45,11 @@ class BackgroundTaskManager {
         endBackgroundTask()
     }
     
-    // 기기가 잠금 해제되었을 때
+    // 실제 기기 잠금이 해제되었을 때
     @objc private func deviceDidUnlock() {
-        print("🔓 기기 잠금 해제: \(Date())")
+        print("🔓 기기 잠금 해제됨: \(Date())")
         isDeviceLocked = false
-        // 잠금 해제되면 데이터 수집 재시작
+        // 잠금 해제되고 실행 중이면 데이터 수집 재시작
         if isRunning {
             scheduleNextCollection()
         }
@@ -105,7 +105,10 @@ class BackgroundTaskManager {
     
     @objc private func applicationDidEnterBackground() {
         print("📱 앱이 백그라운드로 전환됨: \(Date())")
-        // 백그라운드 전환 시 추가 작업 시작하지 않음
+        // 백그라운드에서도 데이터 수집 계속 진행
+        if isRunning {
+            scheduleNextCollection()
+        }
     }
     
     private func startNewDataCollection() async {
