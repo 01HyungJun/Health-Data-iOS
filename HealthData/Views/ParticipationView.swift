@@ -55,9 +55,9 @@ struct ParticipationView: View {
                     ScrollView {
                         VStack(spacing: 20) {
                             headerSection
-                            socialLoginButtons
                             projectSelectionSection
                             agreementSection
+                            socialLoginButtons
                             bottomButtons
                         }
                         .padding()
