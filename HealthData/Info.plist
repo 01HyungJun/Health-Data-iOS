@@ -66,6 +66,10 @@
 	<array>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict/>
 	<key>com.apple.developer.applesignin</key>
 	<array>
 		<string>Default</string>
