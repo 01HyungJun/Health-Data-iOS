@@ -21,20 +21,6 @@
 			remoteGlobalIDString = FACB1E4F2CF5B3C60057D934;
 			remoteInfo = HealthData;
 		};
-		FACB1EAD2CFD46E80057D934 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FACB1E482CF5B3C60057D934 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FACB1E9C2CFD46E50057D934;
-			remoteInfo = "HealthDataWatch Watch App";
-		};
-		FACB1EB72CFD46E80057D934 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FACB1E482CF5B3C60057D934 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = FACB1E9C2CFD46E50057D934;
-			remoteInfo = "HealthDataWatch Watch App";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -54,9 +40,6 @@
 		FACB1E502CF5B3C60057D934 /* HealthData.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthData.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB1E602CF5B3C90057D934 /* HealthDataTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthDataTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FACB1E6A2CF5B3C90057D934 /* HealthDataUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthDataUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FACB1E9D2CFD46E50057D934 /* HealthDataWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthDataWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FACB1EAC2CFD46E80057D934 /* HealthDataWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthDataWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		FACB1EB62CFD46E80057D934 /* HealthDataWatchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthDataWatchUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -107,27 +90,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FACB1E9A2CFD46E50057D934 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FACB1EA92CFD46E80057D934 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FACB1EB32CFD46E80057D934 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -146,9 +108,6 @@
 				FACB1E502CF5B3C60057D934 /* HealthData.app */,
 				FACB1E602CF5B3C90057D934 /* HealthDataTests.xctest */,
 				FACB1E6A2CF5B3C90057D934 /* HealthDataUITests.xctest */,
-				FACB1E9D2CFD46E50057D934 /* HealthDataWatch.app */,
-				FACB1EAC2CFD46E80057D934 /* HealthDataWatchTests.xctest */,
-				FACB1EB62CFD46E80057D934 /* HealthDataWatchUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -222,65 +181,6 @@
 			productReference = FACB1E6A2CF5B3C90057D934 /* HealthDataUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		FACB1E9C2CFD46E50057D934 /* HealthDataWatch */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FACB1EC12CFD46E80057D934 /* Build configuration list for PBXNativeTarget "HealthDataWatch" */;
-			buildPhases = (
-				FACB1E992CFD46E50057D934 /* Sources */,
-				FACB1E9A2CFD46E50057D934 /* Frameworks */,
-				FACB1E9B2CFD46E50057D934 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = HealthDataWatch;
-			packageProductDependencies = (
-			);
-			productName = "HealthDataWatch Watch App";
-			productReference = FACB1E9D2CFD46E50057D934 /* HealthDataWatch.app */;
-			productType = "com.apple.product-type.application";
-		};
-		FACB1EAB2CFD46E80057D934 /* HealthDataWatchTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FACB1EC52CFD46E80057D934 /* Build configuration list for PBXNativeTarget "HealthDataWatchTests" */;
-			buildPhases = (
-				FACB1EA82CFD46E80057D934 /* Sources */,
-				FACB1EA92CFD46E80057D934 /* Frameworks */,
-				FACB1EAA2CFD46E80057D934 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				FACB1EAE2CFD46E80057D934 /* PBXTargetDependency */,
-			);
-			name = HealthDataWatchTests;
-			packageProductDependencies = (
-			);
-			productName = "HealthDataWatch Watch AppTests";
-			productReference = FACB1EAC2CFD46E80057D934 /* HealthDataWatchTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		FACB1EB52CFD46E80057D934 /* HealthDataWatchUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = FACB1EC82CFD46E80057D934 /* Build configuration list for PBXNativeTarget "HealthDataWatchUITests" */;
-			buildPhases = (
-				FACB1EB22CFD46E80057D934 /* Sources */,
-				FACB1EB32CFD46E80057D934 /* Frameworks */,
-				FACB1EB42CFD46E80057D934 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				FACB1EB82CFD46E80057D934 /* PBXTargetDependency */,
-			);
-			name = HealthDataWatchUITests;
-			packageProductDependencies = (
-			);
-			productName = "HealthDataWatch Watch AppUITests";
-			productReference = FACB1EB62CFD46E80057D934 /* HealthDataWatchUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -302,17 +202,6 @@
 						CreatedOnToolsVersion = 16.1;
 						TestTargetID = FACB1E4F2CF5B3C60057D934;
 					};
-					FACB1E9C2CFD46E50057D934 = {
-						CreatedOnToolsVersion = 16.1;
-					};
-					FACB1EAB2CFD46E80057D934 = {
-						CreatedOnToolsVersion = 16.1;
-						TestTargetID = FACB1E9C2CFD46E50057D934;
-					};
-					FACB1EB52CFD46E80057D934 = {
-						CreatedOnToolsVersion = 16.1;
-						TestTargetID = FACB1E9C2CFD46E50057D934;
-					};
 				};
 			};
 			buildConfigurationList = FACB1E4B2CF5B3C60057D934 /* Build configuration list for PBXProject "HealthData" */;
@@ -332,9 +221,6 @@
 				FACB1E4F2CF5B3C60057D934 /* HealthData */,
 				FACB1E5F2CF5B3C90057D934 /* HealthDataTests */,
 				FACB1E692CF5B3C90057D934 /* HealthDataUITests */,
-				FACB1E9C2CFD46E50057D934 /* HealthDataWatch */,
-				FACB1EAB2CFD46E80057D934 /* HealthDataWatchTests */,
-				FACB1EB52CFD46E80057D934 /* HealthDataWatchUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -355,27 +241,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		FACB1E682CF5B3C90057D934 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FACB1E9B2CFD46E50057D934 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FACB1EAA2CFD46E80057D934 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FACB1EB42CFD46E80057D934 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -406,27 +271,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		FACB1E992CFD46E50057D934 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FACB1EA82CFD46E80057D934 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FACB1EB22CFD46E80057D934 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -439,16 +283,6 @@
 			isa = PBXTargetDependency;
 			target = FACB1E4F2CF5B3C60057D934 /* HealthData */;
 			targetProxy = FACB1E6B2CF5B3C90057D934 /* PBXContainerItemProxy */;
-		};
-		FACB1EAE2CFD46E80057D934 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FACB1E9C2CFD46E50057D934 /* HealthDataWatch */;
-			targetProxy = FACB1EAD2CFD46E80057D934 /* PBXContainerItemProxy */;
-		};
-		FACB1EB82CFD46E80057D934 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = FACB1E9C2CFD46E50057D934 /* HealthDataWatch */;
-			targetProxy = FACB1EB72CFD46E80057D934 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -710,150 +544,6 @@
 			};
 			name = Release;
 		};
-		FACB1EC22CFD46E80057D934 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = HealthDataWatch/HealthDataWatch.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"HealthDataWatch/Preview Content\"";
-				DEVELOPMENT_TEAM = SRFR7M9T35;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "$(SRCROOT)/HealthDataWatch/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = HealthDataWatch;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.jaehyoung.HealthData;
-				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jaehyoung.HealthData.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 11.1;
-			};
-			name = Debug;
-		};
-		FACB1EC32CFD46E80057D934 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = HealthDataWatch/HealthDataWatch.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"HealthDataWatch/Preview Content\"";
-				DEVELOPMENT_TEAM = SRFR7M9T35;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "$(SRCROOT)/HealthDataWatch/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = HealthDataWatch;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.jaehyoung.HealthData;
-				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jaehyoung.HealthData.watchkitapp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 11.1;
-			};
-			name = Release;
-		};
-		FACB1EC62CFD46E80057D934 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = SRFR7M9T35;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-05.HealthDataWatch-Watch-AppTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HealthDataWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HealthDataWatch Watch App";
-				WATCHOS_DEPLOYMENT_TARGET = 11.1;
-			};
-			name = Debug;
-		};
-		FACB1EC72CFD46E80057D934 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = SRFR7M9T35;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-05.HealthDataWatch-Watch-AppTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HealthDataWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HealthDataWatch Watch App";
-				WATCHOS_DEPLOYMENT_TARGET = 11.1;
-			};
-			name = Release;
-		};
-		FACB1EC92CFD46E80057D934 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = SRFR7M9T35;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-05.HealthDataWatch-Watch-AppUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_TARGET_NAME = "HealthDataWatch Watch App";
-				WATCHOS_DEPLOYMENT_TARGET = 11.1;
-			};
-			name = Debug;
-		};
-		FACB1ECA2CFD46E80057D934 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = SRFR7M9T35;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-05.HealthDataWatch-Watch-AppUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 4;
-				TEST_TARGET_NAME = "HealthDataWatch Watch App";
-				WATCHOS_DEPLOYMENT_TARGET = 11.1;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -889,33 +579,6 @@
 			buildConfigurations = (
 				FACB1E7B2CF5B3C90057D934 /* Debug */,
 				FACB1E7C2CF5B3C90057D934 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		FACB1EC12CFD46E80057D934 /* Build configuration list for PBXNativeTarget "HealthDataWatch" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FACB1EC22CFD46E80057D934 /* Debug */,
-				FACB1EC32CFD46E80057D934 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		FACB1EC52CFD46E80057D934 /* Build configuration list for PBXNativeTarget "HealthDataWatchTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FACB1EC62CFD46E80057D934 /* Debug */,
-				FACB1EC72CFD46E80057D934 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		FACB1EC82CFD46E80057D934 /* Build configuration list for PBXNativeTarget "HealthDataWatchUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				FACB1EC92CFD46E80057D934 /* Debug */,
-				FACB1ECA2CFD46E80057D934 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

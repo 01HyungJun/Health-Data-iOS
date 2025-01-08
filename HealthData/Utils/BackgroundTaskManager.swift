@@ -49,9 +49,24 @@ class BackgroundTaskManager {
     @objc private func deviceDidUnlock() {
         print("🔓 기기 잠금 해제됨: \(Date())")
         isDeviceLocked = false
-        // 잠금 해제되고 실행 중이면 데이터 수집 재시작
+        
+        // 잠금 해제되면 즉시 데이터 수집 시작
         if isRunning {
-            scheduleNextCollection()
+            print("🔄 잠금 해제 후 데이터 수집 재개")
+            
+            // 백그라운드 작업 시작
+            backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
+                self?.endBackgroundTask()
+            }
+            
+            // 즉시 데이터 수집 시작
+            Task {
+                await startNewDataCollection()
+                endBackgroundTask()
+                
+                // 다음 주기적 수집 예약
+                scheduleNextCollection()
+            }
         }
     }
     
