@@ -106,7 +106,7 @@ class APIService {
                     // 3. UserDefaults에 저장된 이메일도 없으면 에러
                     // 이때는 Apple 로그인 설정에서 해당 앱을 삭제한 후 다시 시도.
                     continuation.resume(throwing: APIError.socialAuthError(
-                        "이메일 정보를 찾을 수 없습니다. 앱을 삭제하고 다시 설치한 후 이메일 제공에 동의해주세요."
+                        "이메일 정보를 찾을 수 없습니다. 설정 -> Apple 계정 -> Apple로 로그인 -> 앱 삭제 후 다시 시도해주세요."
                     ))
                 }
                 
