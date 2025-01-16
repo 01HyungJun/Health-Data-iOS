@@ -5,10 +5,8 @@ import CoreLocation
 class HealthKitManager: NSObject, ObservableObject {
     static let shared = HealthKitManager()
     private let healthStore = HKHealthStore()
-    private let locationManager = CLLocationManager()
     
     @Published var isAuthorized = false
-    @Published var currentLocation: CLLocation?
     
     // 수집할 데이터 유형들
     private lazy var allTypes: Set<HKSampleType> = {
@@ -42,9 +40,6 @@ class HealthKitManager: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
     }
     
     func requestAuthorization() async throws {
@@ -64,9 +59,6 @@ class HealthKitManager: NSObject, ObservableObject {
         
         DispatchQueue.main.async {
             self.isAuthorized = true
-            if self.locationManager.authorizationStatus == .authorizedWhenInUse {
-                self.locationManager.startUpdatingLocation()
-            }
         }
     }
     
@@ -105,11 +97,9 @@ class HealthKitManager: NSObject, ObservableObject {
         let samples = try await fetchData(for: allTypes)
         let userInfo = try await fetchUserInfo(projectId: projectId)
         
-        // 위치 정보를 포함한 HealthData 생성
         var healthData = HealthData.from(healthKitData: samples, userInfo: userInfo)
         
-        // 위치 정보를 measurements에 추가
-        if let location = currentLocation {
+        if let location = LocationManager.shared.lastLocation {
             healthData = HealthData(
                 userInfo: healthData.userInfo,
                 measurements: Measurements(
@@ -221,21 +211,6 @@ class HealthKitManager: NSObject, ObservableObject {
         default:
             return .count()
         }
-    }
-}
-
-extension HealthKitManager: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.last {
-            print("📍 위치 정보: \(location.coordinate.latitude), \(location.coordinate.longitude)")
-            self.currentLocation = location
-            // 위치를 받았으면 업데이트 중지
-            locationManager.stopUpdatingLocation()
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("❌ 위치 오류: \(error.localizedDescription)")
     }
 }
 

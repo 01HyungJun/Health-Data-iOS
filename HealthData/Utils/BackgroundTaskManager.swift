@@ -1,4 +1,5 @@
 import UIKit
+import BackgroundTasks
 
 class BackgroundTaskManager {
     static let shared = BackgroundTaskManager()
@@ -139,8 +140,28 @@ class BackgroundTaskManager {
             let startTime = Date()
             print("📱 데이터 수집 시작: \(startTime)")
             
-            // 헬스 데이터 가져오기
+            // 위치 정보 업데이트 시작
+            LocationManager.shared.startUpdatingLocation()
+            
+            // 위치 정보가 업데이트될 때까지 최대 5초 대기
+            for _ in 0..<5 {
+                if LocationManager.shared.lastLocation != nil {
+                    print("📍 위치 정보 수집 성공")
+                    break
+                }
+                print("⏳ 위치 정보 수집 대기 중...")
+                try await Task.sleep(nanoseconds: 1_000_000_000) // 1초 대기
+            }
+            
+            // 헬스 데이터와 위치 정보를 함께 가져오기
             let healthData = try await HealthKitManager.shared.fetchAllHealthData(projectId: projectId)
+            
+            // 위치 정보 로깅
+            if let location = LocationManager.shared.lastLocation {
+                print("📍 위치 정보 수집됨: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            } else {
+                print("⚠️ 위치 정보 수집 실패")
+            }
             
             // JSON 로깅
             let encoder = JSONEncoder()
@@ -174,5 +195,27 @@ class BackgroundTaskManager {
         nextCollectionWorkItem?.cancel()
         NotificationCenter.default.removeObserver(self)
         endBackgroundTask()
+    }
+    
+    func scheduleAppRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: "com.jaehyoung.healthdata.refresh")
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15분 후
+        
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            print("Could not schedule app refresh: \(error)")
+        }
+    }
+    
+    func handleAppRefresh(task: BGAppRefreshTask) {
+        scheduleAppRefresh() // 다음 업데이트 예약
+        
+        // 위치 업데이트 시작
+        LocationManager.shared.startUpdatingLocation()
+        
+        // 기존의 헬스킷 데이터 업데이트 코드...
+        
+        task.setTaskCompleted(success: true)
     }
 }

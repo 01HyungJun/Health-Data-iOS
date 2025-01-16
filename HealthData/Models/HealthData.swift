@@ -48,8 +48,8 @@ extension HealthData {
             runningSpeed: getValue(from: healthKitData, for: .runningSpeed),
             activeEnergy: getValue(from: healthKitData, for: .activeEnergyBurned),
             basalEnergy: getValue(from: healthKitData, for: .basalEnergyBurned),
-            latitude: nil,
-            longitude: nil
+            latitude: LocationManager.shared.lastLocation?.coordinate.latitude,
+            longitude: LocationManager.shared.lastLocation?.coordinate.longitude
         )
         
         return HealthData(
