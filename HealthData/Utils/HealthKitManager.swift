@@ -44,45 +44,21 @@ class HealthKitManager: NSObject, ObservableObject {
     
     func requestAuthorization() async throws {
         guard HKHealthStore.isHealthDataAvailable() else {
-            print("❌ HealthKit을 사용할 수 없는 기기입니다")
             throw HealthKitError.notAvailable
         }
         
-        print("\n🔐 HealthKit 권한 요청 시작")
-        
-        // 읽기 권한이 필요한 데이터 타입들
-        let typesToRead = Set([
+        // HealthKit 권한 요청 (건강 데이터와 특성 데이터 모두)
+        let readTypes = Set([
             // 특성 데이터
             HKObjectType.characteristicType(forIdentifier: .bloodType)!,
             HKObjectType.characteristicType(forIdentifier: .biologicalSex)!,
-            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
-            // 실시간 데이터
-            HKObjectType.quantityType(forIdentifier: .stepCount)!,
-            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKObjectType.quantityType(forIdentifier: .basalEnergyBurned)!,
-            HKObjectType.quantityType(forIdentifier: .heartRate)!,
-            // 기타 데이터
-            HKObjectType.quantityType(forIdentifier: .height)!,
-            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-            // ... 나머지 데이터 타입들
-        ])
+            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
+        ]).union(allTypes)
         
-        do {
-            try await healthStore.requestAuthorization(toShare: [], read: typesToRead)
-            print("✅ HealthKit 권한 획득 성공")
-            
-            // 현재 권한 상태 확인 및 로깅
-            for type in typesToRead {
-                let status = healthStore.authorizationStatus(for: type)
-                print("- \(type.identifier): \(status.rawValue)")
-            }
-            
-            DispatchQueue.main.async {
-                self.isAuthorized = true
-            }
-        } catch {
-            print("❌ HealthKit 권한 획득 실패: \(error.localizedDescription)")
-            throw error
+        try await healthStore.requestAuthorization(toShare: [], read: readTypes)
+        
+        DispatchQueue.main.async {
+            self.isAuthorized = true
         }
     }
     
@@ -117,8 +93,8 @@ class HealthKitManager: NSObject, ObservableObject {
         )
     }
     
-    func fetchAllHealthData(projectId: Int, date: Date? = nil) async throws -> HealthData {
-        let samples = try await fetchData(for: allTypes, at: date)
+    func fetchAllHealthData(projectId: Int) async throws -> HealthData {
+        let samples = try await fetchData(for: allTypes)
         let userInfo = try await fetchUserInfo(projectId: projectId)
         
         var healthData = HealthData.from(healthKitData: samples, userInfo: userInfo)
@@ -135,8 +111,7 @@ class HealthKitManager: NSObject, ObservableObject {
                     bodyTemperature: healthData.measurements.bodyTemperature,
                     respiratoryRate: healthData.measurements.respiratoryRate,
                     height: healthData.measurements.height,
-                    weight: healthData.measurements.weight
-                    ,
+                    weight: healthData.measurements.weight,
                     runningSpeed: healthData.measurements.runningSpeed,
                     activeEnergy: healthData.measurements.activeEnergy,
                     basalEnergy: healthData.measurements.basalEnergy,
@@ -149,11 +124,11 @@ class HealthKitManager: NSObject, ObservableObject {
         return healthData
     }
     
-    private func fetchData(for types: Set<HKSampleType>, at date: Date? = nil) async throws -> [HKSample] {
+    private func fetchData(for types: Set<HKSampleType>) async throws -> [HKSample] {
         var allSamples: [HKSample] = []
         
         // 사용자 정보 로깅 (임시 projectId 0 사용)
-        let userInfo = try await fetchUserInfo(projectId: 0)
+        let userInfo = try await fetchUserInfo(projectId: 0)  // 로깅용이라 임시값 사용
         print("\n📱 사용자 정보:")
         print("   - 혈액형: \(userInfo.bloodType ?? "Unknown")")
         print("   - 성별: \(userInfo.biologicalSex ?? "Unknown")")
@@ -161,39 +136,10 @@ class HealthKitManager: NSObject, ObservableObject {
         
         print("\n📊 건강 데이터:")
         
-        // date 파라미터가 있으면 해당 시점의 데이터를 가져오기 위한 predicate 생성
-        let realtimePredicate: NSPredicate?
-        let staticPredicate: NSPredicate?
-        
-        if let date = date {
-            let calendar = Calendar.current
-            // 실시간 데이터용 (1주일)
-            let realtimeStartDate = calendar.date(byAdding: .day, value: -7, to: date)!
-            realtimePredicate = HKQuery.predicateForSamples(
-                withStart: realtimeStartDate,
-                end: date,
-                options: .strictEndDate
-            )
-            
-            // 비실시간 데이터용 (1년)
-            let staticStartDate = calendar.date(byAdding: .year, value: -1, to: date)!
-            staticPredicate = HKQuery.predicateForSamples(
-                withStart: staticStartDate,
-                end: date,
-                options: .strictEndDate
-            )
-        } else {
-            realtimePredicate = nil
-            staticPredicate = nil
-        }
-        
         for type in types {
             if let quantityType = type as? HKQuantityType {
                 do {
-                    // 데이터 타입에 따라 다른 predicate 사용
-                    let predicate = isRealtimeDataType(quantityType) ? realtimePredicate : staticPredicate
-                    
-                    if let sample = try await fetchLatestData(for: quantityType, predicate: predicate) {
+                    if let sample = try await fetchLatestData(for: quantityType) {
                         allSamples.append(sample)
                         let value = sample.quantity.doubleValue(for: preferredUnit(for: quantityType))
                         print("✅ 데이터: \(quantityType.identifier)")
@@ -212,15 +158,12 @@ class HealthKitManager: NSObject, ObservableObject {
         return allSamples
     }
     
-    private func fetchLatestData<T: HKQuantityType>(
-        for type: T,
-        predicate: NSPredicate? = nil
-    ) async throws -> HKQuantitySample? {
+    private func fetchLatestData<T: HKQuantityType>(for type: T) async throws -> HKQuantitySample? {
         return try await withCheckedThrowingContinuation { continuation in
             let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
             let query = HKSampleQuery(
                 sampleType: type,
-                predicate: predicate,
+                predicate: nil,
                 limit: 1,
                 sortDescriptors: [sortDescriptor]
             ) { (_, samples, error) in
@@ -268,80 +211,6 @@ class HealthKitManager: NSObject, ObservableObject {
         default:
             return .count()
         }
-    }
-    
-    // 특정 시점의 측정값만 가져오는 함수 추가
-    func fetchHealthMeasurements(at date: Date) async throws -> Measurements {
-        let calendar = Calendar.current
-        
-        // 실시간 데이터는 date 시점까지의 가장 최근 데이터만 찾으면 됨
-        let realtimePredicate = HKQuery.predicateForSamples(
-            withStart: nil,  // 시작 시점 제한 없음
-            end: date,       // 목표 시점까지
-            options: .strictEndDate
-        )
-        
-        // 비실시간 데이터도 동일하게 처리
-        let staticPredicate = realtimePredicate
-        
-        print("\n⏰ 데이터 수집 시간 범위:")
-        print("목표 시간: \(date)")
-        
-        var samples: [HKSample] = []
-        
-        // 각 데이터 타입별로 쿼리 실행
-        for type in allTypes {
-            guard let quantityType = type as? HKQuantityType else { continue }
-            
-            // 데이터 타입에 따라 다른 predicate 사용
-            let predicate = isRealtimeDataType(quantityType) ? realtimePredicate : staticPredicate
-            
-            if let sample = try await fetchLatestData(for: quantityType, predicate: predicate) {
-                print("✅ \(quantityType.identifier) 데이터 발견: \(sample.startDate)")
-                samples.append(sample)
-            } else {
-                print("❌ \(quantityType.identifier) 데이터 없음")
-            }
-        }
-        
-        // 수집된 샘플들을 Measurements 구조체로 변환
-        let measurements = Measurements(
-            stepCount: getValue(from: samples, for: .stepCount),
-            heartRate: getValue(from: samples, for: .heartRate),
-            bloodPressureSystolic: getValue(from: samples, for: .bloodPressureSystolic),
-            bloodPressureDiastolic: getValue(from: samples, for: .bloodPressureDiastolic),
-            oxygenSaturation: getValue(from: samples, for: .oxygenSaturation),
-            bodyTemperature: getValue(from: samples, for: .bodyTemperature),
-            respiratoryRate: getValue(from: samples, for: .respiratoryRate),
-            height: getValue(from: samples, for: .height),
-            weight: getValue(from: samples, for: .bodyMass),
-            runningSpeed: getValue(from: samples, for: .runningSpeed),
-            activeEnergy: getValue(from: samples, for: .activeEnergyBurned),
-            basalEnergy: getValue(from: samples, for: .basalEnergyBurned),
-            latitude: nil,  // 위치 정보는 별도로 주입
-            longitude: nil
-        )
-        
-        return measurements
-    }
-    
-    // 실시간 데이터 타입 체크 함수
-    private func isRealtimeDataType(_ type: HKQuantityType) -> Bool {
-        let realtimeTypes: Set<String> = [
-            HKQuantityTypeIdentifier.stepCount.rawValue,
-            HKQuantityTypeIdentifier.activeEnergyBurned.rawValue,
-            HKQuantityTypeIdentifier.basalEnergyBurned.rawValue,
-            HKQuantityTypeIdentifier.heartRate.rawValue
-        ]
-        return realtimeTypes.contains(type.identifier)
-    }
-    
-    // 헬스킷 샘플에서 값을 추출하는 헬퍼 함수
-    private func getValue(from samples: [HKSample], for identifier: HKQuantityTypeIdentifier) -> Double? {
-        guard let sample = samples.first(where: { $0.sampleType.identifier == identifier.rawValue }) as? HKQuantitySample else {
-            return nil
-        }
-        return sample.quantity.doubleValue(for: preferredUnit(for: sample.quantityType))
     }
 }
 

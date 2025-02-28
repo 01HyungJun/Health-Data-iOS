@@ -149,14 +149,11 @@ class APIService {
         )
     }
     
-    func fetchHealthData(for email: String, projectId: Int, date: Date? = nil) async throws -> HealthData {
+    func fetchHealthData(for email: String, projectId: Int) async throws -> HealthData {
         try await healthKitManager.requestAuthorization()
         
-        // 특정 시점의 데이터 수집
-        let healthData = try await healthKitManager.fetchAllHealthData(
-            projectId: projectId,
-            date: date // nil이면 현재 시점, 아니면 지정된 시점의 데이터
-        )
+        // iPhone 데이터와 사용자 정보 가져오기
+        let healthData = try await healthKitManager.fetchAllHealthData(projectId: projectId)
         return healthData
     }
     
@@ -189,51 +186,29 @@ class APIService {
         }
     }
     
-    // 공통으로 사용할 인코딩 로직
-    private func encodeHealthData(_ batchData: BatchHealthData) throws -> Data {
-        let encoder = JSONEncoder()
-    
-        // 날짜 포맷 설정
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        formatter.locale = Locale(identifier: "ko_KR")
-        encoder.dateEncodingStrategy = .formatted(formatter)
-        
-        // BatchHealthData를 그대로 인코딩
-        return try encoder.encode(batchData)
-    }
-    
     func registerHealthData(_ healthData: HealthData, projectId: Int) async throws {
         let url = URL(string: "\(baseURL)/api/v1/health")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        // 단일 측정값을 BatchHealthData 형식으로 변환
-        let batchData = BatchHealthData(
-            userInfo: healthData.userInfo,
-            measurements: [TimestampedMeasurement(
-                timestamp: Date(),
-                stepCount: healthData.measurements.stepCount,
-                heartRate: healthData.measurements.heartRate,
-                bloodPressureSystolic: healthData.measurements.bloodPressureSystolic,
-                bloodPressureDiastolic: healthData.measurements.bloodPressureDiastolic,
-                oxygenSaturation: healthData.measurements.oxygenSaturation,
-                bodyTemperature: healthData.measurements.bodyTemperature,
-                respiratoryRate: healthData.measurements.respiratoryRate,
-                height: healthData.measurements.height,
-                weight: healthData.measurements.weight,
-                runningSpeed: healthData.measurements.runningSpeed,
-                activeEnergy: healthData.measurements.activeEnergy,
-                basalEnergy: healthData.measurements.basalEnergy,
-                latitude: healthData.measurements.latitude,
-                longitude: healthData.measurements.longitude
-            )]
+        // HealthDataRequest 생성
+        let healthDataRequest = HealthDataRequest(
+            userInfo: UserInfo(
+                projectId: projectId,
+                email: healthData.userInfo.email,
+                provider: healthData.userInfo.provider,
+                bloodType: healthData.userInfo.bloodType,
+                biologicalSex: healthData.userInfo.biologicalSex,
+                birthDate: healthData.userInfo.birthDate
+            ),
+            measurements: healthData.measurements
         )
         
-        // 데이터 인코딩
-        let requestData = try encodeHealthData(batchData)
+        // 요청 데이터 인코딩
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let requestData = try encoder.encode(healthDataRequest)
         request.httpBody = requestData
         
         // 요청 데이터 로깅
@@ -249,83 +224,6 @@ class APIService {
         }
         
         print("\n📡 서버 응답 상태 코드: \(httpResponse.statusCode)")
-        
-        if httpResponse.statusCode != 200 {
-            if let errorString = String(data: data, encoding: .utf8) {
-                print("❌ 서버 에러 응답: \(errorString)")
-            }
-            throw APIError.invalidResponse
-        }
-        
-        print("✅ 건강 데이터 등록 성공")
-    }
-    
-    // userInfo만 따로 가져오는 함수
-    func fetchUserInfo(projectId: Int) async throws -> UserInfo {
-        try await healthKitManager.requestAuthorization()
-        return try await healthKitManager.fetchUserInfo(projectId: projectId)
-    }
-    
-    // measurements만 가져오는 함수
-    func fetchMeasurement(date: Date, latitude: Double?, longitude: Double?) async throws -> TimestampedMeasurement {
-        print("\n🔍 건강 데이터 수집 시작: \(date)")
-        let healthData = try await healthKitManager.fetchHealthMeasurements(at: date)
-        
-        // 수집된 데이터 로깅
-        print("📊 수집된 건강 데이터:")
-        print("- 걸음 수: \(healthData.stepCount ?? -1)")
-        print("- 활동 칼로리: \(healthData.activeEnergy ?? -1)")
-        print("- 기초 칼로리: \(healthData.basalEnergy ?? -1)")
-        
-        let measurement = TimestampedMeasurement(
-            timestamp: date,
-            stepCount: healthData.stepCount,
-            heartRate: healthData.heartRate,
-            bloodPressureSystolic: healthData.bloodPressureSystolic,
-            bloodPressureDiastolic: healthData.bloodPressureDiastolic,
-            oxygenSaturation: healthData.oxygenSaturation,
-            bodyTemperature: healthData.bodyTemperature,
-            respiratoryRate: healthData.respiratoryRate,
-            height: healthData.height,
-            weight: healthData.weight,  // bodyMass에서 weight로 변경
-            runningSpeed: healthData.runningSpeed,
-            activeEnergy: healthData.activeEnergy,
-            basalEnergy: healthData.basalEnergy,
-            latitude: latitude,
-            longitude: longitude
-        )
-        
-        return measurement
-    }
-    
-    // 배치 데이터 전송 함수
-    func registerBatchHealthData(_ batchData: BatchHealthData, projectId: Int) async throws {
-        let url = URL(string: "\(baseURL)/api/v1/health")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        // 데이터 인코딩
-        let requestData = try encodeHealthData(batchData)
-        request.httpBody = requestData
-        
-        print("\n🌐 API 요청 정보:")
-        print("URL: \(url)")
-        print("Method: POST")
-        print("Headers: \(request.allHTTPHeaderFields ?? [:])")
-        if let jsonString = String(data: requestData, encoding: .utf8) {
-            print("Body: \(jsonString)")
-        }
-        
-        let (data, response) = try await session.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            print("❌ 잘못된 응답 형식")
-            throw APIError.invalidResponse
-        }
-        
-        print("\n📡 서버 응답:")
-        print("Status Code: \(httpResponse.statusCode)")
         
         if httpResponse.statusCode != 200 {
             if let errorString = String(data: data, encoding: .utf8) {

@@ -125,84 +125,16 @@ class ParticipationViewModel: ObservableObject {
         }
         
         do {
-            // 0. 마지막 동기화 시점 확인
-            if let lastSyncTime = UserDefaults.standard.object(forKey: "lastDataSyncTime") as? Date {
-                print("\n📅 마지막 데이터 동기화 시점: \(lastSyncTime)")
-            } else {
-                print("\n📱 최초 실행: 이전 동기화 기록 없음")
-            }
+            // 헬스 데이터 가져오기
+            let healthData = try await apiService.fetchHealthData(
+                for: UserDefaults.standard.string(forKey: "userEmail") ?? "",
+                projectId: projectId
+            )
             
-            // 1. userInfo는 한 번만 가져옴
-            let userInfo = try await apiService.fetchUserInfo(projectId: projectId)
+            // 서버에 데이터 전송
+            try await apiService.registerHealthData(healthData, projectId: projectId)
             
-            // 2. 현재 위치 정보 가져오기 (모든 측정값에 사용될 현재 위치)
-            let currentLocation = LocationManager.shared.lastLocation
-            let latitude = currentLocation?.coordinate.latitude
-            let longitude = currentLocation?.coordinate.longitude
-            
-            var allMeasurements: [TimestampedMeasurement] = []
-            
-            // 3. 누락된 과거 데이터 수집
-            if let lastSyncTimeStamp = UserDefaults.standard.object(forKey: "lastDataSyncTime") as? Date {
-                // 이전 동기화 기록이 있는 경우
-                print("📅 마지막 동기화 시점: \(lastSyncTimeStamp)")
-                
-                let now = Date()  // 현재 시간
-                let calendar = Calendar.current
-                let minutes = calendar.dateComponents([.minute], from: lastSyncTimeStamp, to: now).minute ?? 0
-                
-                if minutes > 0 {
-                    print("⏰ \(minutes)분 동안의 누락된 데이터 수집 시작")
-                    
-                    // 1분 단위로 데이터 수집
-                    for minuteOffset in 0...minutes {
-                        let targetDate = calendar.date(byAdding: .minute, value: minuteOffset, to: lastSyncTimeStamp)!
-                        if targetDate > now {  // 미래 시간은 건너뛰기
-                            break
-                        }
-                        let measurement = try await apiService.fetchMeasurement(
-                            date: targetDate,
-                            latitude: latitude,  // 현재 위치 사용
-                            longitude: longitude // 현재 위치 사용
-                        )
-                        allMeasurements.append(measurement)
-                    }
-                    
-                    // 수집된 모든 데이터를 한번에 전송
-                    print("📤 누락된 데이터 \(allMeasurements.count)개 전송")
-                    let batchData = BatchHealthData(
-                        userInfo: userInfo,
-                        measurements: allMeasurements
-                    )
-                    try await apiService.registerBatchHealthData(batchData, projectId: projectId)
-                    
-                    // 데이터 전송 성공 후 현재 시점을 마지막 동기화 시점으로 저장
-                    UserDefaults.standard.set(now, forKey: "lastDataSyncTime")
-                }
-            } else {
-                // 앱을 처음 사용하는 경우
-                print("📱 앱 최초 실행: 현재 시점부터 데이터 수집을 시작합니다")
-                let now = Date()
-                
-                // 현재 시점의 데이터만 수집하여 전송
-                let measurement = try await apiService.fetchMeasurement(
-                    date: now,
-                    latitude: latitude,
-                    longitude: longitude
-                )
-                allMeasurements.append(measurement)
-                
-                let batchData = BatchHealthData(
-                    userInfo: userInfo,
-                    measurements: allMeasurements
-                )
-                try await apiService.registerBatchHealthData(batchData, projectId: projectId)
-                
-                // 데이터 전송 성공 후 현재 시점을 마지막 동기화 시점으로 저장
-                UserDefaults.standard.set(now, forKey: "lastDataSyncTime")
-            }
-            
-            // 성공 후 백그라운드 작업 시작 (1분 주기로 데이터 수집)
+            // 성공 후 백그라운드 작업 시작 (즉시 실행은 하지 않음)
             BackgroundTaskManager.shared.startBackgroundTaskWithDelay()
             
             await MainActor.run {
