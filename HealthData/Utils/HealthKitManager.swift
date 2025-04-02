@@ -50,29 +50,18 @@ class HealthKitManager: NSObject, ObservableObject {
         
         print("\n🔐 HealthKit 권한 요청 시작")
         
-        // 읽기 권한이 필요한 데이터 타입들
-        let typesToRead = Set([
-            // 특성 데이터
-            HKObjectType.characteristicType(forIdentifier: .bloodType)!,
-            HKObjectType.characteristicType(forIdentifier: .biologicalSex)!,
-            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
-            // 실시간 데이터
-            HKObjectType.quantityType(forIdentifier: .stepCount)!,
-            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKObjectType.quantityType(forIdentifier: .basalEnergyBurned)!,
-            HKObjectType.quantityType(forIdentifier: .heartRate)!,
-            // 기타 데이터
-            HKObjectType.quantityType(forIdentifier: .height)!,
-            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-            // ... 나머지 데이터 타입들
-        ])
-        
         do {
-            try await healthStore.requestAuthorization(toShare: [], read: typesToRead)
+            try await healthStore.requestAuthorization(toShare: [], read: self.allTypes)
+            try await healthStore.requestAuthorization(toShare: [], read: self.characteristicTypes)
             print("✅ HealthKit 권한 획득 성공")
             
             // 현재 권한 상태 확인 및 로깅
-            for type in typesToRead {
+            for type in self.allTypes {
+                let status = healthStore.authorizationStatus(for: type)
+                print("- \(type.identifier): \(status.rawValue)")
+            }
+            
+            for type in self.characteristicTypes {
                 let status = healthStore.authorizationStatus(for: type)
                 print("- \(type.identifier): \(status.rawValue)")
             }
